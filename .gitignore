@@ -1,0 +1,4 @@
+/.idea/
+/frontend/plantapp/node_modules/
+/frontend/plantapp/package-lock.json
+/frontend/plantapp/yarn.lock

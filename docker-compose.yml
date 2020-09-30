@@ -1,0 +1,65 @@
+version: "3.1"
+services:
+
+    php-fpm:
+      build: ./docker_config/php-fpm
+      working_dir: /var/www/api
+      volumes:
+        - ./backend:/var/www/api
+        - ./docker_config/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+      networks:
+        - backend
+        - frontend
+
+    mysql:
+      restart: always
+      image: mysql:latest
+      volumes:
+        - mysql-data:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=adminrootpass
+        - MYSQL_USER=admin
+        - MYSQL_PASSWORD=adminpass
+        - MYSQL_DATABASE=plants
+      networks:
+        - backend
+      ports:
+        - "3306:3306"
+
+    nginx:
+      image: nginx:alpine
+      links:
+          - php-fpm
+          - frontend
+      ports:
+          - "80:80"
+          - "443:443"
+      networks:
+          - backend
+          - frontend
+      volumes:
+          - ./backend:/var/www/api
+          - ./frontend:/var/www/app
+          - ./docker_config/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+          - "8080:80"
+
+    frontend:
+        stdin_open: true
+        tty: true
+        build:
+          context: .
+          dockerfile: ./docker_config/Dockerfile
+        working_dir: /home/node/app
+        networks:
+          - frontend
+        volumes:
+          - ./frontend/plantapp:/home/node/app
+        ports:
+          - 3001:3000
+      
+networks:
+    frontend:
+    backend:
+volumes:
+    mysql-data:      
